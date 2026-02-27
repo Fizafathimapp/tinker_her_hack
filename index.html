@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>TripMaker AI — Group Travel Planning</title>
+  <link rel="preconnect" href="https://api.fontshare.com">
+  <link href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&f[]=satoshi@400,500,600,700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    :root {
+      --paper: #f5f2ec;
+      --ink: #0d0d12;
+      --accent: #e84b1a;
+      --gold: #c9a84c;
+      --sage: #4a7c59;
+      --sky: #2d6fa3;
+      --love: #4a7c59;
+      --skip: #c94a4a;
+      --max-w: 480px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: 'Satoshi', system-ui, sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      max-width: var(--max-w);
+      margin: 0 auto;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      z-index: 9999;
+    }
+
+    h1, h2, h3 { font-family: 'Clash Display', sans-serif; font-weight: 600; }
+
+    .screen { display: none; min-height: 100vh; flex-direction: column; padding-bottom: 80px; }
+    .screen.active { display: flex; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 12px 16px;
+      background: var(--paper);
+      border-bottom: 1px solid rgba(13,13,18,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .topbar h2 { font-size: 1rem; font-weight: 600; }
+    .role-badge {
+      font-size: 0.7rem;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .role-badge.coordinator { background: var(--gold); color: var(--ink); }
+    .role-badge.member { background: var(--sky); color: white; }
+
+    .cta-bar {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: var(--max-w);
+      padding: 12px 16px;
+      background: var(--paper);
+      border-top: 1px solid rgba(13,13,18,0.08);
+      z-index: 100;
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 14px 24px;
+      font-family: 'Satoshi', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      text-align: center;
+      transition: transform 0.15s, opacity 0.15s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-secondary { background: var(--ink); color: white; }
+    .btn-outline { background: transparent; border: 2px solid var(--ink); color: var(--ink); }
+
+    .content { flex: 1; padding: 20px 16px; }
+
+    /* Splash */
+    #splash {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    #splash h1 {
+      font-size: 2rem;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    #splash p { color: rgba(13,13,18,0.6); margin-bottom: 32px; }
+    .loading-bar {
+      width: 100%;
+      max-width: 200px;
+      height: 4px;
+      background: rgba(13,13,18,0.1);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .loading-bar-fill {
+      height: 100%;
+      background: var(--accent);
+      width: 0;
+      transition: width 0.3s;
+    }
+
+    /* Entry */
+    #entry .content { display: flex; flex-direction: column; gap: 16px; }
+    .role-card {
+      padding: 24px;
+      border-radius: 16px;
+      border: 2px solid rgba(13,13,18,0.1);
+      cursor: pointer;
+      transition: all 0.2s;
+      background: white;
+    }
+    .role-card:hover, .role-card:active { border-color: var(--accent); background: rgba(232,75,26,0.05); }
+    .role-card h3 { font-size: 1.2rem; margin-bottom: 4px; }
+    .role-card p { font-size: 0.9rem; color: rgba(13,13,18,0.6); }
+
+    /* Forms */
+    .form-group { margin-bottom: 16px; }
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 12px 16px;
+      font-family: 'Satoshi', sans-serif;
+      font-size: 1rem;
+      border: 2px solid rgba(13,13,18,0.15);
+      border-radius: 10px;
+      background: white;
+    }
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    /* Swipe deck */
+    .swipe-container {
+      position: relative;
+      width: 100%;
+      max-width: 360px;
+      margin: 0 auto;
+      height: 420px;
+    }
+    .swipe-card {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: white;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(13,13,18,0.12);
+      cursor: grab;
+      user-select: none;
+      touch-action: pan-y;
+      transition: transform 0.1s;
+    }
+    .swipe-card:active { cursor: grabbing; }
+    .swipe-card.dragging { transition: none; }
+    .swipe-card .card-photo {
+      height: 66%;
+      background-size: cover;
+      background-position: center;
+    }
+    .swipe-card .card-body {
+      height: 34%;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .swipe-card .card-name { font-family: 'Clash Display', sans-serif; font-size: 1.2rem; font-weight: 600; }
+    .swipe-card .card-tag { font-size: 0.75rem; color: var(--sage); font-weight: 600; }
+    .swipe-card .card-desc { font-size: 0.85rem; color: rgba(13,13,18,0.6); line-height: 1.3; }
+    .swipe-stamp {
+      position: absolute;
+      top: 24px;
+      font-size: 2.5rem;
+      font-weight: 700;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 10;
+    }
+    .swipe-stamp.love { left: 20px; color: var(--love); transform: rotate(-15deg); }
+    .swipe-stamp.skip { right: 20px; color: var(--skip); transform: rotate(15deg); }
+    .swipe-stamp.visible { opacity: 1; }
+
+    .swipe-controls {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-top: 20px;
+    }
+    .swipe-btn {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      transition: transform 0.15s;
+    }
+    .swipe-btn:active { transform: scale(0.9); }
+    .swipe-btn.skip { background: rgba(201,74,74,0.15); color: var(--skip); }
+    .swipe-btn.love { background: rgba(74,124,89,0.15); color: var(--love); }
+
+    .category-progress {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+    .progress-pill {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: rgba(13,13,18,0.06);
+      color: rgba(13,13,18,0.5);
+    }
+    .progress-pill.active { background: var(--accent); color: white; }
+    .progress-pill.done { background: var(--sage); color: white; }
+    .step-dots { display: flex; gap: 6px; justify-content: center; margin-bottom: 16px; }
+    .step-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(13,13,18,0.2);
+    }
+    .step-dot.active { background: var(--accent); transform: scale(1.2); }
+    .step-dot.done { background: var(--sage); }
+    .liked-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .liked-tag {
+      padding: 4px 10px;
+      background: rgba(74,124,89,0.2);
+      color: var(--sage);
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .budget-slider-wrap { margin-top: 16px; }
+    .budget-slider-wrap label { font-size: 0.9rem; font-weight: 600; }
+    input[type="range"] {
+      width: 100%;
+      margin-top: 8px;
+      accent-color: var(--accent);
+    }
+
+    /* Swipe-to-Sync */
+    .confidence-meter {
+      padding: 20px;
+      background: white;
+      border-radius: 16px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 20px rgba(13,13,18,0.06);
+    }
+    .confidence-value { font-family: 'Clash Display', sans-serif; font-size: 2rem; font-weight: 700; color: var(--accent); }
+    .confidence-status { font-size: 0.9rem; color: rgba(13,13,18,0.6); margin-top: 4px; }
+    .momentum-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: white;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    .avatar-stack { display: flex; }
+    .avatar-stack span {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--gold));
+      margin-left: -8px;
+      border: 2px solid white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: white;
+    }
+    .avatar-stack span:first-child { margin-left: 0; }
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--sage);
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+    /* Share screen */
+    .share-qr { display: flex; justify-content: center; padding: 24px; background: white; border-radius: 16px; margin-bottom: 20px; }
+    .share-qr canvas, .share-qr img { border-radius: 8px; }
+    .trip-code {
+      font-family: 'Clash Display', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-align: center;
+      margin: 16px 0;
+    }
+    .share-buttons { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 20px 0; }
+    .share-buttons .btn { flex: 1; min-width: 140px; }
+    .member-status-list { margin-top: 20px; }
+    .member-status-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: white;
+      border-radius: 10px;
+      margin-bottom: 8px;
+    }
+    .member-status-item .badge {
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+    .badge.done { background: rgba(74,124,89,0.2); color: var(--sage); }
+    .badge.pending { background: rgba(13,13,18,0.08); color: rgba(13,13,18,0.5); }
+
+    /* Results */
+    .hero-card {
+      border-radius: 20px;
+      overflow: hidden;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 32px rgba(13,13,18,0.12);
+    }
+    .hero-card .hero-photo { height: 180px; background-size: cover; background-position: center; }
+    .hero-card .hero-body { padding: 20px; background: white; }
+    .hero-card h3 { font-size: 1.4rem; margin-bottom: 4px; }
+    .vote-bars { margin: 20px 0; }
+    .vote-bar-item {
+      margin-bottom: 12px;
+    }
+    .vote-bar-item label { font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 4px; }
+    .vote-bar-track {
+      height: 8px;
+      background: rgba(13,13,18,0.08);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .vote-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--gold));
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+    .conflict-list { margin: 20px 0; }
+    .conflict-item {
+      padding: 16px;
+      background: rgba(232,75,26,0.08);
+      border-radius: 12px;
+      margin-bottom: 12px;
+      border-left: 4px solid var(--accent);
+    }
+    .conflict-item h4 { font-size: 0.95rem; margin-bottom: 6px; }
+    .conflict-item p { font-size: 0.85rem; color: rgba(13,13,18,0.7); }
+    .ai-plan {
+      padding: 20px;
+      background: linear-gradient(135deg, rgba(74,124,89,0.1), rgba(45,111,163,0.1));
+      border-radius: 16px;
+      margin-top: 20px;
+    }
+    .ai-plan h4 { margin-bottom: 12px; color: var(--sage); }
+    .ai-plan ul { padding-left: 20px; }
+    .ai-plan li { margin-bottom: 8px; font-size: 0.9rem; }
+    .private-card-grid { display: grid; gap: 12px; }
+    .private-card {
+      padding: 16px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(13,13,18,0.06);
+    }
+    .private-card h4 { font-size: 0.95rem; margin-bottom: 8px; }
+    .private-card .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .private-card .tags span { padding: 4px 10px; background: rgba(74,124,89,0.15); border-radius: 8px; font-size: 0.8rem; }
+    .privacy-note {
+      padding: 16px;
+      background: rgba(45,111,163,0.1);
+      border-radius: 12px;
+      font-size: 0.9rem;
+      color: var(--sky);
+      margin-bottom: 20px;
+    }
+    .password-gate { text-align: center; padding: 40px 20px; }
+    .password-gate input { margin: 16px 0; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      padding: 12px 24px;
+      background: var(--ink);
+      color: white;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      z-index: 9998;
+      opacity: 0;
+      transition: all 0.3s;
+      max-width: calc(100% - 32px);
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    .toast.love { background: var(--sage); }
+    .toast.skip { background: var(--skip); }
+  </style>
+</head>
+<body>
+  <!-- Splash -->
+  <div id="splash" class="screen active">
+    <h1>TripMaker AI</h1>
+    <p>Resolve the argument phase. Swipe. Sync. Travel.</p>
+    <div class="loading-bar"><div class="loading-bar-fill" id="splashProgress"></div></div>
+  </div>
+
+  <!-- Entry -->
+  <div id="entry" class="screen">
+    <div class="content">
+      <h2 style="margin-bottom: 8px;">Start planning</h2>
+      <p style="color: rgba(13,13,18,0.6); margin-bottom: 24px;">Choose your role to begin</p>
+      <div class="role-card" data-role="coordinator">
+        <h3>Coordinator</h3>
+        <p>Create a trip, invite members, unlock the AI conflict report</p>
+      </div>
+      <div class="role-card" data-role="member">
+        <h3>Member</h3>
+        <p>Join with a trip code and submit preferences anonymously</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Coordinator: Create Trip -->
+  <div id="coord-create" class="screen">
+    <div class="topbar"><h2>Create Trip</h2><span class="role-badge coordinator">Coordinator</span></div>
+    <div class="content">
+      <h2 style="margin-bottom: 20px;">New trip</h2>
+      <form id="coordCreateForm">
+        <div class="form-group">
+          <label>Trip name</label>
+          <input type="text" id="tripName" placeholder="e.g. Bali 2025" required>
+        </div>
+        <div class="form-group">
+          <label>Member names (comma-separated)</label>
+          <input type="text" id="memberNames" placeholder="Alex, Sam, Jordan, Taylor" required>
+        </div>
+        <div class="form-group">
+          <label>Coordinator password (to unlock report)</label>
+          <input type="password" id="coordPassword" placeholder="••••••••" required>
+        </div>
+      </form>
+    </div>
+    <div class="cta-bar"><button class="btn btn-primary" id="coordCreateBtn">Create & fill preferences</button></div>
+  </div>
+
+  <!-- Member: Join -->
+  <div id="member-join" class="screen">
+    <div class="topbar"><h2>Join Trip</h2><span class="role-badge member">Member</span></div>
+    <div class="content">
+      <h2 style="margin-bottom: 20px;">Enter trip details</h2>
+      <form id="memberJoinForm">
+        <div class="form-group">
+          <label>6-digit trip code</label>
+          <input type="text" id="tripCodeJoin" placeholder="123456" maxlength="6" pattern="[0-9]{6}" required>
+        </div>
+        <div class="form-group">
+          <label>Your name</label>
+          <input type="text" id="memberName" placeholder="Jordan" required>
+        </div>
+      </form>
+    </div>
+    <div class="cta-bar"><button class="btn btn-primary" id="memberJoinBtn">Join & fill preferences</button></div>
+  </div>
+
+  <!-- Swipe preferences (shared) -->
+  <div id="swipe-preferences" class="screen">
+    <div class="topbar">
+      <h2 id="swipeTitle">Preferences</h2>
+      <span class="role-badge" id="swipeRoleBadge">Member</span>
+    </div>
+    <div class="content">
+      <div class="category-progress" id="categoryProgress"></div>
+      <div class="step-dots" id="stepDots"></div>
+      <div class="liked-tags" id="likedTags"></div>
+      <div class="swipe-container" id="swipeContainer"></div>
+      <div class="swipe-controls">
+        <button class="swipe-btn skip" id="swipeSkip" aria-label="Skip">✕</button>
+        <button class="swipe-btn love" id="swipeLove" aria-label="Love">♥</button>
+      </div>
+      <div class="budget-slider-wrap" id="budgetWrap" style="display:none;">
+        <label>Budget level</label>
+        <input type="range" id="budgetSlider" min="1" max="5" value="3">
+        <span id="budgetLabel">Medium</span>
+      </div>
+    </div>
+    <div class="cta-bar"><button class="btn btn-primary" id="swipeNextCategory" style="display:none;">Next category</button></div>
+  </div>
+
+  <!-- Swipe-to-Sync (destination final vote) -->
+  <div id="swipe-sync" class="screen">
+    <div class="topbar"><h2>Final vote</h2><span class="role-badge" id="syncRoleBadge">Member</span></div>
+    <div class="content">
+      <div class="confidence-meter">
+        <div class="confidence-value" id="confidenceValue">38%</div>
+        <div class="confidence-status" id="confidenceStatus">Swiping to build consensus…</div>
+      </div>
+      <div class="momentum-bar">
+        <div class="avatar-stack" id="avatarStack"></div>
+        <span class="pulse-dot"></span>
+        <span id="momentumText">3 members syncing</span>
+      </div>
+      <div class="swipe-container" id="syncContainer"></div>
+      <div class="swipe-controls">
+        <button class="swipe-btn skip" id="syncSkip">✕</button>
+        <button class="swipe-btn love" id="syncLove">♥</button>
+      </div>
+    </div>
+    <div class="cta-bar"><button class="btn btn-primary" id="syncSubmitBtn" style="display:none;">Submit & see result</button></div>
+  </div>
+
+  <!-- Share screen -->
+  <div id="share" class="screen">
+    <div class="topbar"><h2>Share trip</h2><span class="role-badge coordinator">Coordinator</span></div>
+    <div class="content">
+      <div class="share-qr" id="shareQr"></div>
+      <div class="trip-code" id="shareTripCode">000000</div>
+      <div class="share-buttons">
+        <button class="btn btn-outline" id="copyLinkBtn">Copy link</button>
+        <button class="btn btn-outline" id="whatsappBtn">Share on WhatsApp</button>
+        <button class="btn btn-outline" id="saveQrBtn">Save QR</button>
+        <button class="btn btn-outline" id="emailBtn">Email</button>
+      </div>
+      <h3 style="margin: 24px 0 12px;">Member status</h3>
+      <div class="member-status-list" id="memberStatusList"></div>
+    </div>
+    <div class="cta-bar"><button class="btn btn-primary" id="viewReportBtn">Unlock conflict report</button></div>
+  </div>
+
+  <!-- Password gate -->
+  <div id="password-gate" class="screen">
+    <div class="topbar"><h2>Unlock report</h2><span class="role-badge coordinator">Coordinator</span></div>
+    <div class="content">
+      <div class="password-gate">
+        <h3>Enter coordinator password</h3>
+        <div class="form-group" style="max-width:280px;margin:16px auto;">
+          <input type="password" id="reportPassword" placeholder="••••••••">
+        </div>
+        <button class="btn btn-primary" id="unlockReportBtn">Unlock report</button>
+        <p id="passwordError" style="color:var(--skip);margin-top:12px;display:none;">Incorrect password</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Coordinator result -->
+  <div id="coord-result" class="screen">
+    <div class="topbar"><h2>AI Conflict Report</h2><span class="role-badge coordinator">Coordinator</span></div>
+    <div class="content">
+      <div class="hero-card" id="coordHeroCard"></div>
+      <h3>Group preferences</h3>
+      <div class="vote-bars" id="coordVoteBars"></div>
+      <h3>Detected conflicts</h3>
+      <div class="conflict-list" id="coordConflictList"></div>
+      <div class="ai-plan" id="coordAiPlan"></div>
+    </div>
+  </div>
+
+  <!-- Member result -->
+  <div id="member-result" class="screen">
+    <div class="topbar"><h2>Your picks</h2><span class="role-badge member">Member</span></div>
+    <div class="content">
+      <div class="privacy-note">🔒 The coordinator cannot see your individual picks. Your preferences are anonymous.</div>
+      <div class="private-card-grid" id="memberPrivateGrid"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    // ─── Mock data & state ─────────────────────────────────────────────────────
+    const DATA = {
+      climate: [
+        { id: 'tropical', name: 'Tropical', tag: 'Climate', desc: 'Warm, humid, palm trees & beaches', img: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600' },
+        { id: 'coastal', name: 'Coastal', tag: 'Climate', desc: 'Sea breeze, cliffs, ocean views', img: 'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=600' },
+        { id: 'hills', name: 'Hills', tag: 'Climate', desc: 'Rolling green, cool mornings', img: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600' },
+        { id: 'desert', name: 'Desert', tag: 'Climate', desc: 'Arid, dramatic landscapes', img: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=600' },
+        { id: 'urban', name: 'Urban', tag: 'Climate', desc: 'City vibes, architecture', img: 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=600' },
+        { id: 'snow', name: 'Snow', tag: 'Climate', desc: 'Winter wonderland', img: 'https://images.unsplash.com/photo-1519904981063-b0cf448d479e?w=600' }
+      ],
+      destinations: {
+        tropical: [
+          { id: 'bali', name: 'Bali', tag: 'Tropical', desc: 'Island of gods, rice terraces & temples', img: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600' },
+          { id: 'phuket', name: 'Phuket', tag: 'Tropical', desc: 'Thai beaches, night markets', img: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=600' },
+          { id: 'maldives', name: 'Maldives', tag: 'Tropical', desc: 'Overwater bungalows & coral', img: 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=600' },
+          { id: 'costa-rica', name: 'Costa Rica', tag: 'Tropical', desc: 'Rainforest & eco-adventure', img: 'https://images.unsplash.com/photo-1534477675270-cd5d809ab9a9?w=600' },
+          { id: 'seychelles', name: 'Seychelles', tag: 'Tropical', desc: 'Granite boulders & turquoise', img: 'https://images.unsplash.com/photo-1590523741831-ab7e8b8f9c7f?w=600' }
+        ],
+        coastal: [
+          { id: 'santorini', name: 'Santorini', tag: 'Coastal', desc: 'White cliffs & blue domes', img: 'https://images.unsplash.com/photo-1613395877344-13d4a8e0d49e?w=600' },
+          { id: 'amalfi', name: 'Amalfi Coast', tag: 'Coastal', desc: 'Italian cliffs & lemon groves', img: 'https://images.unsplash.com/photo-1555992336-fb0d29498b13?w=600' },
+          { id: 'algarve', name: 'Algarve', tag: 'Coastal', desc: 'Golden cliffs & sea caves', img: 'https://images.unsplash.com/photo-1555881400-74d7acaacd8b?w=600' },
+          { id: 'croatia', name: 'Croatian Coast', tag: 'Coastal', desc: 'Medieval towns & islands', img: 'https://images.unsplash.com/photo-1569864358642-9d1684040f43?w=600' }
+        ],
+        hills: [
+          { id: 'tuscany', name: 'Tuscany', tag: 'Hills', desc: 'Vineyards & hilltop towns', img: 'https://images.unsplash.com/photo-1523531294919-4bcd7c65e216?w=600' },
+          { id: 'nepal', name: 'Nepal', tag: 'Hills', desc: 'Himalayan foothills & treks', img: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=600' },
+          { id: 'swiss', name: 'Swiss Alps', tag: 'Hills', desc: 'Alpine meadows & peaks', img: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600' },
+          { id: 'porto', name: 'Porto', tag: 'Hills', desc: 'Wine cellars & riverside', img: 'https://images.unsplash.com/photo-1555881400-74d7acaacd8b?w=600' }
+        ],
+        desert: [
+          { id: 'marrakech', name: 'Marrakech', tag: 'Desert', desc: 'Souks, riads & Atlas views', img: 'https://images.unsplash.com/photo-1489749798305-4fea3ae63d43?w=600' },
+          { id: 'dubai', name: 'Dubai', tag: 'Desert', desc: 'Modern luxury meets dunes', img: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=600' },
+          { id: 'utah', name: 'Utah', tag: 'Desert', desc: 'Red rocks & canyons', img: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=600' },
+          { id: 'wadi-rum', name: 'Wadi Rum', tag: 'Desert', desc: 'Jordanian desert & stars', img: 'https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=600' }
+        ],
+        urban: [
+          { id: 'tokyo', name: 'Tokyo', tag: 'Urban', desc: 'Neon, tradition & ramen', img: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=600' },
+          { id: 'paris', name: 'Paris', tag: 'Urban', desc: 'Art, cafés & romance', img: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=600' },
+          { id: 'barcelona', name: 'Barcelona', tag: 'Urban', desc: 'Gaudí, tapas & beach', img: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?w=600' },
+          { id: 'nyc', name: 'New York', tag: 'Urban', desc: 'Skyscrapers & culture', img: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=600' }
+        ],
+        snow: [
+          { id: 'iceland', name: 'Iceland', tag: 'Snow', desc: 'Northern lights & glaciers', img: 'https://images.unsplash.com/photo-1504829857797-ddff29c27927?w=600' },
+          { id: 'swiss-ski', name: 'Swiss Alps', tag: 'Snow', desc: 'Skiing & chocolate', img: 'https://images.unsplash.com/photo-1605540436563-5bca919ae766?w=600' },
+          { id: 'norway', name: 'Norway', tag: 'Snow', desc: 'Fjords & aurora', img: 'https://images.unsplash.com/photo-1520769945061-0a448c463865?w=600' },
+          { id: 'japan-snow', name: 'Hokkaido', tag: 'Snow', desc: 'Powder snow & onsens', img: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=600' }
+        ]
+      },
+      food: [
+        { id: 'seafood', name: 'Seafood', tag: 'Food', desc: 'Fresh catch, coastal cuisine', img: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=600' },
+        { id: 'veg', name: 'Vegetarian', tag: 'Food', desc: 'Plant-based dishes', img: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600' },
+        { id: 'street', name: 'Street Food', tag: 'Food', desc: 'Local markets & stalls', img: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?w=600' },
+        { id: 'bbq', name: 'BBQ', tag: 'Food', desc: 'Grilled meats & outdoor eats', img: 'https://images.unsplash.com/photo-1558030006-450675393462?w=600' },
+        { id: 'continental', name: 'Continental', tag: 'Food', desc: 'European fine dining', img: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600' },
+        { id: 'vegan', name: 'Vegan', tag: 'Food', desc: 'Fully plant-based', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600' }
+      ],
+      activities: [
+        { id: 'surfing', name: 'Surfing', tag: 'Activity', desc: 'Ride the waves', img: 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?w=600' },
+        { id: 'trekking', name: 'Trekking', tag: 'Activity', desc: 'Mountain & forest hikes', img: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=600' },
+        { id: 'scuba', name: 'Scuba Diving', tag: 'Activity', desc: 'Underwater exploration', img: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=600' },
+        { id: 'yoga', name: 'Yoga', tag: 'Activity', desc: 'Retreats & wellness', img: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=600' },
+        { id: 'paragliding', name: 'Paragliding', tag: 'Activity', desc: 'Soar above landscapes', img: 'https://images.unsplash.com/photo-1551524559-8af4e6624178?w=600' },
+        { id: 'nightlife', name: 'Nightlife', tag: 'Activity', desc: 'Bars, clubs & live music', img: 'https://images.unsplash.com/photo-1566417713940-fe7c737a9ef2?w=600' }
+      ],
+      accommodation: [
+        { id: 'hostel', name: 'Hostel', tag: 'Stay', desc: 'Social, budget-friendly', img: 'https://images.unsplash.com/photo-1520277739336-7bf67edfa768?w=600' },
+        { id: 'boutique', name: 'Boutique Hotel', tag: 'Stay', desc: 'Unique, design-forward', img: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600' },
+        { id: 'beach-resort', name: 'Beach Resort', tag: 'Stay', desc: 'All-inclusive, pool & spa', img: 'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=600' },
+        { id: 'villa', name: 'Whole Villa', tag: 'Stay', desc: 'Private house, full group', img: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600' }
+      ],
+      hotelPrefs: [
+        { id: 'pool', name: 'Pool', tag: 'Amenity', desc: 'Swimming pool on site', img: 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?w=600' },
+        { id: 'breakfast', name: 'Breakfast', tag: 'Amenity', desc: 'Included breakfast', img: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=600' },
+        { id: 'ac', name: 'Air conditioning', tag: 'Amenity', desc: 'Climate control', img: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600' },
+        { id: 'wifi', name: 'WiFi', tag: 'Amenity', desc: 'High-speed internet', img: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=600' },
+        { id: 'gym', name: 'Gym', tag: 'Amenity', desc: 'Fitness facility', img: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600' },
+        { id: 'pet', name: 'Pet-friendly', tag: 'Amenity', desc: 'Bring your furry friend', img: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600' }
+      ],
+      accessibility: [
+        { id: 'wheelchair', name: 'Wheelchair', tag: 'Accessibility', desc: 'Full mobility access', img: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=600' },
+        { id: 'sensory', name: 'Sensory', tag: 'Accessibility', desc: 'Quiet, low-stimulation options', img: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600' },
+        { id: 'dietary', name: 'Dietary', tag: 'Accessibility', desc: 'Special diet accommodations', img: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=600' },
+        { id: 'low-stamina', name: 'Low Stamina', tag: 'Accessibility', desc: 'Shorter walks, rest stops', img: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=600' },
+        { id: 'vertigo', name: 'Vertigo', tag: 'Accessibility', desc: 'Avoid heights & cliff edges', img: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600' },
+        { id: 'none', name: 'None', tag: 'Accessibility', desc: 'No special requirements', img: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=600' }
+      ]
+    };
+
+    const CATEGORIES = [
+      { id: 'climate', label: 'Climate', key: 'climate', max: 2 },
+      { id: 'food', label: 'Food', key: 'food', max: -1 },
+      { id: 'activities', label: 'Activities', key: 'activities', max: -1 },
+      { id: 'stay', label: 'Stay', key: 'accommodation', max: 1 },
+      { id: 'amenities', label: 'Amenities', key: 'hotelPrefs', max: -1 },
+      { id: 'access', label: 'Accessibility', key: 'accessibility', max: -1 }
+    ];
+
+    let state = {
+      role: null,
+      currentCategoryIndex: 0,
+      currentCardIndex: 0,
+      selections: {},
+      tripCode: null
+    };
+
+    // --- SCREEN NAVIGATION ---
+    function showScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(screenId).classList.add('active');
+    }
+
+    // --- INITIALIZE APP ---
+    // Simulate splash loading
+    setTimeout(() => {
+      document.getElementById('splashProgress').style.width = '100%';
+      setTimeout(() => showScreen('entry'), 500);
+    }, 1500);
+
+    // --- ROLE SELECTION ---
+    document.querySelectorAll('.role-card').forEach(card => {
+      card.addEventListener('click', () => {
+        state.role = card.dataset.role;
+        if (state.role === 'coordinator') {
+          showScreen('coord-create');
+        } else {
+          showScreen('member-join');
+        }
+      });
+    });
+
+    // --- COORDINATOR CREATE ---
+    document.getElementById('coordCreateBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      const tripName = document.getElementById('tripName').value;
+      if (!tripName) return alert("Please enter a trip name");
+      
+      state.tripCode = Math.floor(100000 + Math.random() * 900000);
+      startSwiping();
+    });
+
+    // --- MEMBER JOIN ---
+    document.getElementById('memberJoinBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      const code = document.getElementById('tripCodeJoin').value;
+      if (code.length < 6) return alert("Enter 6-digit code");
+      startSwiping();
+    });
+
+    function startSwiping() {
+      const badge = document.getElementById('swipeRoleBadge');
+      badge.textContent = state.role;
+      badge.className = `role-badge ${state.role}`;
+      showScreen('swipe-preferences');
+      renderCard();
+    }
+
+    // --- SIMPLE CARD RENDERING ---
+    function renderCard() {
+      const container = document.getElementById('swipeContainer');
+      const category = CATEGORIES[state.currentCategoryIndex];
+      const items = DATA[category.key];
+      const item = items[state.currentCardIndex];
+
+      if (!item) {
+        nextCategory();
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="swipe-card">
+          <div class="card-photo" style="background-image: url('${item.img}')"></div>
+          <div class="card-body">
+            <div class="card-tag">${item.tag}</div>
+            <div class="card-name">${item.name}</div>
+            <div class="card-desc">${item.desc}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function nextCategory() {
+      state.currentCategoryIndex++;
+      state.currentCardIndex = 0;
+      if (state.currentCategoryIndex < CATEGORIES.length) {
+        renderCard();
+      } else {
+        finishSwiping();
+      }
+    }
+
+    function finishSwiping() {
+      if (state.role === 'coordinator') {
+        document.getElementById('shareTripCode').textContent = state.tripCode;
+        // Generate QR Code
+        new QRCode(document.getElementById("shareQr"), {
+          text: "https://tripmaker.ai/" + state.tripCode,
+          width: 128,
+          height: 128
+        });
+        showScreen('share');
+      } else {
+        showScreen('member-result');
+      }
+    }
+
+    // --- BUTTON CONTROLS ---
+    document.getElementById('swipeLove').addEventListener('click', () => {
+      state.currentCardIndex++;
+      renderCard();
+    });
+
+    document.getElementById('swipeSkip').addEventListener('click', () => {
+      state.currentCardIndex++;
+      renderCard();
+    });
+
+  </script>
+</body>
+</html>

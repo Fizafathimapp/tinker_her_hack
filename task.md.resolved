@@ -1,0 +1,14 @@
+# TripMaker AI Tasks
+
+- [ ] Requirements gathering and planning
+- [ ] Set up HTML boilerplate with fonts and CSS variables
+- [ ] Build CSS UI framework (cards, buttons, forms, typograhpy, animations)
+- [ ] Build Splash and Home (Role Selection) screens
+- [ ] Build Coordinator Setup and Member Join screens
+- [ ] Build Swipe Interface core mechanics (touch/mouse drag, stacking, animation)
+- [ ] Implement all 7 Preference Categories with hardcoded data
+- [ ] Build Swipe-to-Sync loading screen
+- [ ] Build Share screen with QR code generation
+- [ ] Build Coordinator Auth and Report screens
+- [ ] Build Private Member Result screen
+- [ ] Final wire-up of state and transitions
