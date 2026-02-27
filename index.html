@@ -175,6 +175,7 @@
       max-width: 360px;
       margin: 0 auto;
       height: 420px;
+      touch-action: none;
     }
     .swipe-card {
       position: absolute;
@@ -188,7 +189,7 @@
       box-shadow: 0 8px 32px rgba(13,13,18,0.12);
       cursor: grab;
       user-select: none;
-      touch-action: pan-y;
+      touch-action: none;
       transition: transform 0.1s;
     }
     .swipe-card:active { cursor: grabbing; }
@@ -269,7 +270,7 @@
     }
     .step-dot.active { background: var(--accent); transform: scale(1.2); }
     .step-dot.done { background: var(--sage); }
-    .liked-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .liked-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; min-height: 28px; }
     .liked-tag {
       padding: 4px 10px;
       background: rgba(74,124,89,0.2);
@@ -278,13 +279,14 @@
       font-size: 0.8rem;
       font-weight: 600;
     }
-    .budget-slider-wrap { margin-top: 16px; }
-    .budget-slider-wrap label { font-size: 0.9rem; font-weight: 600; }
+    .budget-slider-wrap { margin-top: 16px; padding: 16px; background: white; border-radius: 12px; }
+    .budget-slider-wrap label { font-size: 0.9rem; font-weight: 600; display: block; }
     input[type="range"] {
       width: 100%;
       margin-top: 8px;
       accent-color: var(--accent);
     }
+    .budget-labels { display: flex; justify-content: space-between; font-size: 0.75rem; color: rgba(13,13,18,0.5); margin-top: 4px; }
 
     /* Swipe-to-Sync */
     .confidence-meter {
@@ -333,6 +335,7 @@
     /* Share screen */
     .share-qr { display: flex; justify-content: center; padding: 24px; background: white; border-radius: 16px; margin-bottom: 20px; }
     .share-qr canvas, .share-qr img { border-radius: 8px; }
+    .share-qr > div { display: flex; justify-content: center; }
     .trip-code {
       font-family: 'Clash Display', sans-serif;
       font-size: 2rem;
@@ -373,9 +376,7 @@
     .hero-card .hero-body { padding: 20px; background: white; }
     .hero-card h3 { font-size: 1.4rem; margin-bottom: 4px; }
     .vote-bars { margin: 20px 0; }
-    .vote-bar-item {
-      margin-bottom: 12px;
-    }
+    .vote-bar-item { margin-bottom: 12px; }
     .vote-bar-item label { font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 4px; }
     .vote-bar-track {
       height: 8px;
@@ -445,6 +446,7 @@
       opacity: 0;
       transition: all 0.3s;
       max-width: calc(100% - 32px);
+      pointer-events: none;
     }
     .toast.show {
       opacity: 1;
@@ -455,14 +457,12 @@
   </style>
 </head>
 <body>
-  <!-- Splash -->
   <div id="splash" class="screen active">
     <h1>TripMaker AI</h1>
     <p>Resolve the argument phase. Swipe. Sync. Travel.</p>
     <div class="loading-bar"><div class="loading-bar-fill" id="splashProgress"></div></div>
   </div>
 
-  <!-- Entry -->
   <div id="entry" class="screen">
     <div class="content">
       <h2 style="margin-bottom: 8px;">Start planning</h2>
@@ -478,7 +478,6 @@
     </div>
   </div>
 
-  <!-- Coordinator: Create Trip -->
   <div id="coord-create" class="screen">
     <div class="topbar"><h2>Create Trip</h2><span class="role-badge coordinator">Coordinator</span></div>
     <div class="content">
@@ -501,7 +500,6 @@
     <div class="cta-bar"><button class="btn btn-primary" id="coordCreateBtn">Create & fill preferences</button></div>
   </div>
 
-  <!-- Member: Join -->
   <div id="member-join" class="screen">
     <div class="topbar"><h2>Join Trip</h2><span class="role-badge member">Member</span></div>
     <div class="content">
@@ -509,7 +507,7 @@
       <form id="memberJoinForm">
         <div class="form-group">
           <label>6-digit trip code</label>
-          <input type="text" id="tripCodeJoin" placeholder="123456" maxlength="6" pattern="[0-9]{6}" required>
+          <input type="text" id="tripCodeJoin" placeholder="123456" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" required>
         </div>
         <div class="form-group">
           <label>Your name</label>
@@ -520,7 +518,6 @@
     <div class="cta-bar"><button class="btn btn-primary" id="memberJoinBtn">Join & fill preferences</button></div>
   </div>
 
-  <!-- Swipe preferences (shared) -->
   <div id="swipe-preferences" class="screen">
     <div class="topbar">
       <h2 id="swipeTitle">Preferences</h2>
@@ -538,13 +535,13 @@
       <div class="budget-slider-wrap" id="budgetWrap" style="display:none;">
         <label>Budget level</label>
         <input type="range" id="budgetSlider" min="1" max="5" value="3">
-        <span id="budgetLabel">Medium</span>
+        <div class="budget-labels"><span>Budget</span><span>Premium</span></div>
+        <span id="budgetLabel" style="display:block;margin-top:4px;font-weight:600;">Medium</span>
       </div>
     </div>
     <div class="cta-bar"><button class="btn btn-primary" id="swipeNextCategory" style="display:none;">Next category</button></div>
   </div>
 
-  <!-- Swipe-to-Sync (destination final vote) -->
   <div id="swipe-sync" class="screen">
     <div class="topbar"><h2>Final vote</h2><span class="role-badge" id="syncRoleBadge">Member</span></div>
     <div class="content">
@@ -555,7 +552,7 @@
       <div class="momentum-bar">
         <div class="avatar-stack" id="avatarStack"></div>
         <span class="pulse-dot"></span>
-        <span id="momentumText">3 members syncing</span>
+        <span id="momentumText">Members syncing</span>
       </div>
       <div class="swipe-container" id="syncContainer"></div>
       <div class="swipe-controls">
@@ -566,7 +563,6 @@
     <div class="cta-bar"><button class="btn btn-primary" id="syncSubmitBtn" style="display:none;">Submit & see result</button></div>
   </div>
 
-  <!-- Share screen -->
   <div id="share" class="screen">
     <div class="topbar"><h2>Share trip</h2><span class="role-badge coordinator">Coordinator</span></div>
     <div class="content">
@@ -584,7 +580,6 @@
     <div class="cta-bar"><button class="btn btn-primary" id="viewReportBtn">Unlock conflict report</button></div>
   </div>
 
-  <!-- Password gate -->
   <div id="password-gate" class="screen">
     <div class="topbar"><h2>Unlock report</h2><span class="role-badge coordinator">Coordinator</span></div>
     <div class="content">
@@ -599,7 +594,6 @@
     </div>
   </div>
 
-  <!-- Coordinator result -->
   <div id="coord-result" class="screen">
     <div class="topbar"><h2>AI Conflict Report</h2><span class="role-badge coordinator">Coordinator</span></div>
     <div class="content">
@@ -612,7 +606,6 @@
     </div>
   </div>
 
-  <!-- Member result -->
   <div id="member-result" class="screen">
     <div class="topbar"><h2>Your picks</h2><span class="role-badge member">Member</span></div>
     <div class="content">
@@ -624,223 +617,734 @@
   <div id="toast" class="toast"></div>
 
   <script>
-    // ─── Mock data & state ─────────────────────────────────────────────────────
-    const DATA = {
-      climate: [
-        { id: 'tropical', name: 'Tropical', tag: 'Climate', desc: 'Warm, humid, palm trees & beaches', img: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600' },
-        { id: 'coastal', name: 'Coastal', tag: 'Climate', desc: 'Sea breeze, cliffs, ocean views', img: 'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=600' },
-        { id: 'hills', name: 'Hills', tag: 'Climate', desc: 'Rolling green, cool mornings', img: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600' },
-        { id: 'desert', name: 'Desert', tag: 'Climate', desc: 'Arid, dramatic landscapes', img: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=600' },
-        { id: 'urban', name: 'Urban', tag: 'Climate', desc: 'City vibes, architecture', img: 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=600' },
-        { id: 'snow', name: 'Snow', tag: 'Climate', desc: 'Winter wonderland', img: 'https://images.unsplash.com/photo-1519904981063-b0cf448d479e?w=600' }
+(function() {
+  const DATA = {
+    climate: [
+      { id: 'tropical', name: 'Tropical', tag: 'Climate', desc: 'Warm, humid, palm trees & beaches', img: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600' },
+      { id: 'coastal', name: 'Coastal', tag: 'Climate', desc: 'Sea breeze, cliffs, ocean views', img: 'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=600' },
+      { id: 'hills', name: 'Hills', tag: 'Climate', desc: 'Rolling green, cool mornings', img: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600' },
+      { id: 'desert', name: 'Desert', tag: 'Climate', desc: 'Arid, dramatic landscapes', img: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=600' },
+      { id: 'urban', name: 'Urban', tag: 'Climate', desc: 'City vibes, architecture', img: 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=600' },
+      { id: 'snow', name: 'Snow', tag: 'Climate', desc: 'Winter wonderland', img: 'https://images.unsplash.com/photo-1519904981063-b0cf448d479e?w=600' }
+    ],
+    destinations: {
+      tropical: [
+        { id: 'bali', name: 'Bali', tag: 'Tropical', desc: 'Island of gods, rice terraces & temples', img: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600' },
+        { id: 'phuket', name: 'Phuket', tag: 'Tropical', desc: 'Thai beaches, night markets', img: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=600' },
+        { id: 'maldives', name: 'Maldives', tag: 'Tropical', desc: 'Overwater bungalows & coral', img: 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=600' },
+        { id: 'costa-rica', name: 'Costa Rica', tag: 'Tropical', desc: 'Rainforest & eco-adventure', img: 'https://images.unsplash.com/photo-1534477675270-cd5d809ab9a9?w=600' },
+        { id: 'seychelles', name: 'Seychelles', tag: 'Tropical', desc: 'Granite boulders & turquoise', img: 'https://images.unsplash.com/photo-1590523741831-ab7e8b8f9c7f?w=600' }
       ],
-      destinations: {
-        tropical: [
-          { id: 'bali', name: 'Bali', tag: 'Tropical', desc: 'Island of gods, rice terraces & temples', img: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600' },
-          { id: 'phuket', name: 'Phuket', tag: 'Tropical', desc: 'Thai beaches, night markets', img: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=600' },
-          { id: 'maldives', name: 'Maldives', tag: 'Tropical', desc: 'Overwater bungalows & coral', img: 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=600' },
-          { id: 'costa-rica', name: 'Costa Rica', tag: 'Tropical', desc: 'Rainforest & eco-adventure', img: 'https://images.unsplash.com/photo-1534477675270-cd5d809ab9a9?w=600' },
-          { id: 'seychelles', name: 'Seychelles', tag: 'Tropical', desc: 'Granite boulders & turquoise', img: 'https://images.unsplash.com/photo-1590523741831-ab7e8b8f9c7f?w=600' }
-        ],
-        coastal: [
-          { id: 'santorini', name: 'Santorini', tag: 'Coastal', desc: 'White cliffs & blue domes', img: 'https://images.unsplash.com/photo-1613395877344-13d4a8e0d49e?w=600' },
-          { id: 'amalfi', name: 'Amalfi Coast', tag: 'Coastal', desc: 'Italian cliffs & lemon groves', img: 'https://images.unsplash.com/photo-1555992336-fb0d29498b13?w=600' },
-          { id: 'algarve', name: 'Algarve', tag: 'Coastal', desc: 'Golden cliffs & sea caves', img: 'https://images.unsplash.com/photo-1555881400-74d7acaacd8b?w=600' },
-          { id: 'croatia', name: 'Croatian Coast', tag: 'Coastal', desc: 'Medieval towns & islands', img: 'https://images.unsplash.com/photo-1569864358642-9d1684040f43?w=600' }
-        ],
-        hills: [
-          { id: 'tuscany', name: 'Tuscany', tag: 'Hills', desc: 'Vineyards & hilltop towns', img: 'https://images.unsplash.com/photo-1523531294919-4bcd7c65e216?w=600' },
-          { id: 'nepal', name: 'Nepal', tag: 'Hills', desc: 'Himalayan foothills & treks', img: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=600' },
-          { id: 'swiss', name: 'Swiss Alps', tag: 'Hills', desc: 'Alpine meadows & peaks', img: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600' },
-          { id: 'porto', name: 'Porto', tag: 'Hills', desc: 'Wine cellars & riverside', img: 'https://images.unsplash.com/photo-1555881400-74d7acaacd8b?w=600' }
-        ],
-        desert: [
-          { id: 'marrakech', name: 'Marrakech', tag: 'Desert', desc: 'Souks, riads & Atlas views', img: 'https://images.unsplash.com/photo-1489749798305-4fea3ae63d43?w=600' },
-          { id: 'dubai', name: 'Dubai', tag: 'Desert', desc: 'Modern luxury meets dunes', img: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=600' },
-          { id: 'utah', name: 'Utah', tag: 'Desert', desc: 'Red rocks & canyons', img: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=600' },
-          { id: 'wadi-rum', name: 'Wadi Rum', tag: 'Desert', desc: 'Jordanian desert & stars', img: 'https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=600' }
-        ],
-        urban: [
-          { id: 'tokyo', name: 'Tokyo', tag: 'Urban', desc: 'Neon, tradition & ramen', img: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=600' },
-          { id: 'paris', name: 'Paris', tag: 'Urban', desc: 'Art, cafés & romance', img: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=600' },
-          { id: 'barcelona', name: 'Barcelona', tag: 'Urban', desc: 'Gaudí, tapas & beach', img: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?w=600' },
-          { id: 'nyc', name: 'New York', tag: 'Urban', desc: 'Skyscrapers & culture', img: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=600' }
-        ],
-        snow: [
-          { id: 'iceland', name: 'Iceland', tag: 'Snow', desc: 'Northern lights & glaciers', img: 'https://images.unsplash.com/photo-1504829857797-ddff29c27927?w=600' },
-          { id: 'swiss-ski', name: 'Swiss Alps', tag: 'Snow', desc: 'Skiing & chocolate', img: 'https://images.unsplash.com/photo-1605540436563-5bca919ae766?w=600' },
-          { id: 'norway', name: 'Norway', tag: 'Snow', desc: 'Fjords & aurora', img: 'https://images.unsplash.com/photo-1520769945061-0a448c463865?w=600' },
-          { id: 'japan-snow', name: 'Hokkaido', tag: 'Snow', desc: 'Powder snow & onsens', img: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=600' }
-        ]
-      },
-      food: [
-        { id: 'seafood', name: 'Seafood', tag: 'Food', desc: 'Fresh catch, coastal cuisine', img: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=600' },
-        { id: 'veg', name: 'Vegetarian', tag: 'Food', desc: 'Plant-based dishes', img: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600' },
-        { id: 'street', name: 'Street Food', tag: 'Food', desc: 'Local markets & stalls', img: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?w=600' },
-        { id: 'bbq', name: 'BBQ', tag: 'Food', desc: 'Grilled meats & outdoor eats', img: 'https://images.unsplash.com/photo-1558030006-450675393462?w=600' },
-        { id: 'continental', name: 'Continental', tag: 'Food', desc: 'European fine dining', img: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600' },
-        { id: 'vegan', name: 'Vegan', tag: 'Food', desc: 'Fully plant-based', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600' }
+      coastal: [
+        { id: 'santorini', name: 'Santorini', tag: 'Coastal', desc: 'White cliffs & blue domes', img: 'https://images.unsplash.com/photo-1613395877344-13d4a8e0d49e?w=600' },
+        { id: 'amalfi', name: 'Amalfi Coast', tag: 'Coastal', desc: 'Italian cliffs & lemon groves', img: 'https://images.unsplash.com/photo-1555992336-fb0d29498b13?w=600' },
+        { id: 'algarve', name: 'Algarve', tag: 'Coastal', desc: 'Golden cliffs & sea caves', img: 'https://images.unsplash.com/photo-1555881400-74d7acaacd8b?w=600' },
+        { id: 'croatia', name: 'Croatian Coast', tag: 'Coastal', desc: 'Medieval towns & islands', img: 'https://images.unsplash.com/photo-1569864358642-9d1684040f43?w=600' }
       ],
-      activities: [
-        { id: 'surfing', name: 'Surfing', tag: 'Activity', desc: 'Ride the waves', img: 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?w=600' },
-        { id: 'trekking', name: 'Trekking', tag: 'Activity', desc: 'Mountain & forest hikes', img: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=600' },
-        { id: 'scuba', name: 'Scuba Diving', tag: 'Activity', desc: 'Underwater exploration', img: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=600' },
-        { id: 'yoga', name: 'Yoga', tag: 'Activity', desc: 'Retreats & wellness', img: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=600' },
-        { id: 'paragliding', name: 'Paragliding', tag: 'Activity', desc: 'Soar above landscapes', img: 'https://images.unsplash.com/photo-1551524559-8af4e6624178?w=600' },
-        { id: 'nightlife', name: 'Nightlife', tag: 'Activity', desc: 'Bars, clubs & live music', img: 'https://images.unsplash.com/photo-1566417713940-fe7c737a9ef2?w=600' }
+      hills: [
+        { id: 'tuscany', name: 'Tuscany', tag: 'Hills', desc: 'Vineyards & hilltop towns', img: 'https://images.unsplash.com/photo-1523531294919-4bcd7c65e216?w=600' },
+        { id: 'nepal', name: 'Nepal', tag: 'Hills', desc: 'Himalayan foothills & treks', img: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=600' },
+        { id: 'swiss', name: 'Swiss Alps', tag: 'Hills', desc: 'Alpine meadows & peaks', img: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600' },
+        { id: 'porto', name: 'Porto', tag: 'Hills', desc: 'Wine cellars & riverside', img: 'https://images.unsplash.com/photo-1555881400-74d7acaacd8b?w=600' }
       ],
-      accommodation: [
-        { id: 'hostel', name: 'Hostel', tag: 'Stay', desc: 'Social, budget-friendly', img: 'https://images.unsplash.com/photo-1520277739336-7bf67edfa768?w=600' },
-        { id: 'boutique', name: 'Boutique Hotel', tag: 'Stay', desc: 'Unique, design-forward', img: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600' },
-        { id: 'beach-resort', name: 'Beach Resort', tag: 'Stay', desc: 'All-inclusive, pool & spa', img: 'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=600' },
-        { id: 'villa', name: 'Whole Villa', tag: 'Stay', desc: 'Private house, full group', img: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600' }
+      desert: [
+        { id: 'marrakech', name: 'Marrakech', tag: 'Desert', desc: 'Souks, riads & Atlas views', img: 'https://images.unsplash.com/photo-1489749798305-4fea3ae63d43?w=600' },
+        { id: 'dubai', name: 'Dubai', tag: 'Desert', desc: 'Modern luxury meets dunes', img: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=600' },
+        { id: 'utah', name: 'Utah', tag: 'Desert', desc: 'Red rocks & canyons', img: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=600' },
+        { id: 'wadi-rum', name: 'Wadi Rum', tag: 'Desert', desc: 'Jordanian desert & stars', img: 'https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=600' }
       ],
-      hotelPrefs: [
-        { id: 'pool', name: 'Pool', tag: 'Amenity', desc: 'Swimming pool on site', img: 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?w=600' },
-        { id: 'breakfast', name: 'Breakfast', tag: 'Amenity', desc: 'Included breakfast', img: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=600' },
-        { id: 'ac', name: 'Air conditioning', tag: 'Amenity', desc: 'Climate control', img: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600' },
-        { id: 'wifi', name: 'WiFi', tag: 'Amenity', desc: 'High-speed internet', img: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=600' },
-        { id: 'gym', name: 'Gym', tag: 'Amenity', desc: 'Fitness facility', img: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600' },
-        { id: 'pet', name: 'Pet-friendly', tag: 'Amenity', desc: 'Bring your furry friend', img: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600' }
+      urban: [
+        { id: 'tokyo', name: 'Tokyo', tag: 'Urban', desc: 'Neon, tradition & ramen', img: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=600' },
+        { id: 'paris', name: 'Paris', tag: 'Urban', desc: 'Art, cafés & romance', img: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=600' },
+        { id: 'barcelona', name: 'Barcelona', tag: 'Urban', desc: 'Gaudí, tapas & beach', img: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?w=600' },
+        { id: 'nyc', name: 'New York', tag: 'Urban', desc: 'Skyscrapers & culture', img: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=600' }
       ],
-      accessibility: [
-        { id: 'wheelchair', name: 'Wheelchair', tag: 'Accessibility', desc: 'Full mobility access', img: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=600' },
-        { id: 'sensory', name: 'Sensory', tag: 'Accessibility', desc: 'Quiet, low-stimulation options', img: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600' },
-        { id: 'dietary', name: 'Dietary', tag: 'Accessibility', desc: 'Special diet accommodations', img: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=600' },
-        { id: 'low-stamina', name: 'Low Stamina', tag: 'Accessibility', desc: 'Shorter walks, rest stops', img: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=600' },
-        { id: 'vertigo', name: 'Vertigo', tag: 'Accessibility', desc: 'Avoid heights & cliff edges', img: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600' },
-        { id: 'none', name: 'None', tag: 'Accessibility', desc: 'No special requirements', img: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=600' }
+      snow: [
+        { id: 'iceland', name: 'Iceland', tag: 'Snow', desc: 'Northern lights & glaciers', img: 'https://images.unsplash.com/photo-1504829857797-ddff29c27927?w=600' },
+        { id: 'swiss-ski', name: 'Swiss Alps', tag: 'Snow', desc: 'Skiing & chocolate', img: 'https://images.unsplash.com/photo-1605540436563-5bca919ae766?w=600' },
+        { id: 'norway', name: 'Norway', tag: 'Snow', desc: 'Fjords & aurora', img: 'https://images.unsplash.com/photo-1520769945061-0a448c463865?w=600' },
+        { id: 'japan-snow', name: 'Hokkaido', tag: 'Snow', desc: 'Powder snow & onsens', img: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=600' }
       ]
-    };
+    },
+    food: [
+      { id: 'seafood', name: 'Seafood', tag: 'Food', desc: 'Fresh catch, coastal cuisine', img: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=600' },
+      { id: 'veg', name: 'Vegetarian', tag: 'Food', desc: 'Plant-based dishes', img: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600' },
+      { id: 'street', name: 'Street Food', tag: 'Food', desc: 'Local markets & stalls', img: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?w=600' },
+      { id: 'bbq', name: 'BBQ', tag: 'Food', desc: 'Grilled meats & outdoor eats', img: 'https://images.unsplash.com/photo-1558030006-450675393462?w=600' },
+      { id: 'continental', name: 'Continental', tag: 'Food', desc: 'European fine dining', img: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600' },
+      { id: 'vegan', name: 'Vegan', tag: 'Food', desc: 'Fully plant-based', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600' }
+    ],
+    activities: [
+      { id: 'surfing', name: 'Surfing', tag: 'Activity', desc: 'Ride the waves', img: 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?w=600' },
+      { id: 'trekking', name: 'Trekking', tag: 'Activity', desc: 'Mountain & forest hikes', img: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=600' },
+      { id: 'scuba', name: 'Scuba Diving', tag: 'Activity', desc: 'Underwater exploration', img: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=600' },
+      { id: 'yoga', name: 'Yoga', tag: 'Activity', desc: 'Retreats & wellness', img: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=600' },
+      { id: 'paragliding', name: 'Paragliding', tag: 'Activity', desc: 'Soar above landscapes', img: 'https://images.unsplash.com/photo-1551524559-8af4e6624178?w=600' },
+      { id: 'nightlife', name: 'Nightlife', tag: 'Activity', desc: 'Bars, clubs & live music', img: 'https://images.unsplash.com/photo-1566417713940-fe7c737a9ef2?w=600' }
+    ],
+    accommodation: [
+      { id: 'hostel', name: 'Hostel', tag: 'Stay', desc: 'Social, budget-friendly', img: 'https://images.unsplash.com/photo-1520277739336-7bf67edfa768?w=600' },
+      { id: 'boutique', name: 'Boutique Hotel', tag: 'Stay', desc: 'Unique, design-forward', img: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600' },
+      { id: 'beach-resort', name: 'Beach Resort', tag: 'Stay', desc: 'All-inclusive, pool & spa', img: 'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=600' },
+      { id: 'villa', name: 'Whole Villa', tag: 'Stay', desc: 'Private house, full group', img: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600' }
+    ],
+    hotelPrefs: [
+      { id: 'pool', name: 'Pool', tag: 'Amenity', desc: 'Swimming pool on site', img: 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?w=600' },
+      { id: 'breakfast', name: 'Breakfast', tag: 'Amenity', desc: 'Included breakfast', img: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=600' },
+      { id: 'ac', name: 'Air conditioning', tag: 'Amenity', desc: 'Climate control', img: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600' },
+      { id: 'wifi', name: 'WiFi', tag: 'Amenity', desc: 'High-speed internet', img: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=600' },
+      { id: 'gym', name: 'Gym', tag: 'Amenity', desc: 'Fitness facility', img: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600' },
+      { id: 'pet', name: 'Pet-friendly', tag: 'Amenity', desc: 'Bring your furry friend', img: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600' }
+    ],
+    accessibility: [
+      { id: 'wheelchair', name: 'Wheelchair', tag: 'Accessibility', desc: 'Full mobility access', img: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=600' },
+      { id: 'sensory', name: 'Sensory', tag: 'Accessibility', desc: 'Quiet, low-stimulation options', img: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600' },
+      { id: 'dietary', name: 'Dietary', tag: 'Accessibility', desc: 'Special diet accommodations', img: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=600' },
+      { id: 'low-stamina', name: 'Low Stamina', tag: 'Accessibility', desc: 'Shorter walks, rest stops', img: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=600' },
+      { id: 'vertigo', name: 'Vertigo', tag: 'Accessibility', desc: 'Avoid heights & cliff edges', img: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600' },
+      { id: 'none', name: 'None', tag: 'Accessibility', desc: 'No special requirements', img: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=600' }
+    ]
+  };
 
-    const CATEGORIES = [
-      { id: 'climate', label: 'Climate', key: 'climate', max: 2 },
-      { id: 'food', label: 'Food', key: 'food', max: -1 },
-      { id: 'activities', label: 'Activities', key: 'activities', max: -1 },
-      { id: 'stay', label: 'Stay', key: 'accommodation', max: 1 },
-      { id: 'amenities', label: 'Amenities', key: 'hotelPrefs', max: -1 },
-      { id: 'access', label: 'Accessibility', key: 'accessibility', max: -1 }
-    ];
+  const CATEGORIES = [
+    { id: 'climate', label: 'Climate', key: 'climate', max: 2 },
+    { id: 'destination', label: 'Destination', key: 'destination', max: 2, dynamic: true },
+    { id: 'food', label: 'Food', key: 'food', max: -1 },
+    { id: 'activities', label: 'Activities', key: 'activities', max: -1 },
+    { id: 'accommodation', label: 'Stay', key: 'accommodation', max: 1 },
+    { id: 'hotelPrefs', label: 'Amenities', key: 'hotelPrefs', max: -1 },
+    { id: 'accessibility', label: 'Accessibility', key: 'accessibility', max: -1, hasBudget: true }
+  ];
 
-    let state = {
-      role: null,
-      currentCategoryIndex: 0,
-      currentCardIndex: 0,
-      selections: {},
-      tripCode: null
-    };
+  const BUDGET_LABELS = ['Budget', 'Economy', 'Medium', 'Comfort', 'Premium'];
+  const STORAGE_KEY = 'tripmaker_trips';
 
-    // --- SCREEN NAVIGATION ---
-    function showScreen(screenId) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.getElementById(screenId).classList.add('active');
-    }
+  let state = {
+    role: null,
+    memberName: null,
+    tripCode: null,
+    tripName: null,
+    coordPassword: null,
+    members: [],
+    currentCategoryIndex: 0,
+    currentCardIndex: 0,
+    selections: {},
+    syncSelections: [],
+    syncCardIndex: 0,
+    memberId: null
+  };
 
-    // --- INITIALIZE APP ---
-    // Simulate splash loading
-    setTimeout(() => {
-      document.getElementById('splashProgress').style.width = '100%';
-      setTimeout(() => showScreen('entry'), 500);
-    }, 1500);
+  function getTrips() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    } catch (e) { return {}; }
+  }
+  function saveTrip(code, data) {
+    const trips = getTrips();
+    trips[code] = data;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(trips));
+  }
+  function getTrip(code) { return getTrips()[code] || null; }
 
-    // --- ROLE SELECTION ---
-    document.querySelectorAll('.role-card').forEach(card => {
-      card.addEventListener('click', () => {
-        state.role = card.dataset.role;
-        if (state.role === 'coordinator') {
-          showScreen('coord-create');
-        } else {
-          showScreen('member-join');
-        }
+  function showScreen(screenId) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const el = document.getElementById(screenId);
+    if (el) el.classList.add('active');
+  }
+
+  function toast(msg, type = '') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast' + (type ? ' ' + type : '');
+    t.classList.add('show');
+    clearTimeout(toast._tid);
+    toast._tid = setTimeout(() => t.classList.remove('show'), 1500);
+  }
+
+  function getCurrentItems() {
+    const cat = CATEGORIES[state.currentCategoryIndex];
+    if (!cat) return [];
+    if (cat.dynamic && cat.key === 'destination') {
+      const climateIds = (state.selections.climate || []).map(c => c.id);
+      const items = [];
+      const ids = climateIds.length ? climateIds : Object.keys(DATA.destinations);
+      ids.forEach(id => {
+        (DATA.destinations[id] || []).forEach(d => items.push(d));
       });
-    });
+      return [...new Map(items.map(i => [i.id, i])).values()];
+    }
+    return DATA[cat.key] || [];
+  }
 
-    // --- COORDINATOR CREATE ---
-    document.getElementById('coordCreateBtn').addEventListener('click', (e) => {
-      e.preventDefault();
-      const tripName = document.getElementById('tripName').value;
-      if (!tripName) return alert("Please enter a trip name");
-      
-      state.tripCode = Math.floor(100000 + Math.random() * 900000);
-      startSwiping();
-    });
+  function getCurrentCategory() { return CATEGORIES[state.currentCategoryIndex]; }
+  function getLikedForCategory(catId) { return state.selections[catId] || []; }
+  function canLikeMore(catId) {
+    const cat = CATEGORIES.find(c => c.id === catId);
+    if (!cat || cat.max === -1) return true;
+    const liked = getLikedForCategory(catId).length;
+    return liked < cat.max;
+  }
 
-    // --- MEMBER JOIN ---
-    document.getElementById('memberJoinBtn').addEventListener('click', (e) => {
-      e.preventDefault();
-      const code = document.getElementById('tripCodeJoin').value;
-      if (code.length < 6) return alert("Enter 6-digit code");
-      startSwiping();
-    });
+  function renderProgress() {
+    const prog = document.getElementById('categoryProgress');
+    prog.innerHTML = CATEGORIES.map((c, i) => {
+      let cls = 'progress-pill';
+      if (i < state.currentCategoryIndex) cls += ' done';
+      else if (i === state.currentCategoryIndex) cls += ' active';
+      return `<span class="${cls}">${c.label}</span>`;
+    }).join('');
 
-    function startSwiping() {
-      const badge = document.getElementById('swipeRoleBadge');
-      badge.textContent = state.role;
-      badge.className = `role-badge ${state.role}`;
-      showScreen('swipe-preferences');
-      renderCard();
+    const dots = document.getElementById('stepDots');
+    const items = getCurrentItems();
+    dots.innerHTML = items.map((_, i) => {
+      let cls = 'step-dot';
+      if (i < state.currentCardIndex) cls += ' done';
+      else if (i === state.currentCardIndex) cls += ' active';
+      return `<span class="${cls}"></span>`;
+    }).join('');
+  }
+
+  function renderLikedTags() {
+    const cat = getCurrentCategory();
+    if (!cat) return;
+    const liked = getLikedForCategory(cat.id);
+    document.getElementById('likedTags').innerHTML = liked.map(l =>
+      `<span class="liked-tag">${l.name}</span>`
+    ).join('');
+  }
+
+  function swipeCard(loved) {
+    const items = getCurrentItems();
+    const item = items[state.currentCardIndex];
+    if (!item) return;
+
+    const cat = getCurrentCategory();
+    const liked = getLikedForCategory(cat.id) || [];
+
+    if (loved) {
+      if (!canLikeMore(cat.id)) {
+        toast(`Max ${cat.max} for ${cat.label}`, 'skip');
+        state.currentCardIndex++;
+        return attemptAdvance();
+      }
+      liked.push(item);
+      state.selections[cat.id] = liked;
+      toast('♥ Loved', 'love');
+    } else {
+      toast('Skipped', 'skip');
     }
 
-    // --- SIMPLE CARD RENDERING ---
-    function renderCard() {
-      const container = document.getElementById('swipeContainer');
-      const category = CATEGORIES[state.currentCategoryIndex];
-      const items = DATA[category.key];
-      const item = items[state.currentCardIndex];
+    state.currentCardIndex++;
+    renderLikedTags();
+    renderProgress();
+    attemptAdvance();
+  }
 
-      if (!item) {
-        nextCategory();
+  function attemptAdvance() {
+    const items = getCurrentItems();
+    const cat = getCurrentCategory();
+
+    if (state.currentCardIndex >= items.length) {
+      document.getElementById('swipeContainer').innerHTML = '';
+      if (cat.hasBudget) {
+        document.getElementById('budgetWrap').style.display = 'block';
+        document.getElementById('swipeContainer').style.display = 'none';
+        const ctrls = document.querySelector('.swipe-controls');
+        if (ctrls) ctrls.style.display = 'none';
+      }
+      document.getElementById('swipeNextCategory').style.display = 'block';
+      document.getElementById('swipeLove').disabled = true;
+      document.getElementById('swipeSkip').disabled = true;
+      return;
+    }
+    renderCard();
+  }
+
+  function renderCard() {
+    const container = document.getElementById('swipeContainer');
+    const items = getCurrentItems();
+    const item = items[state.currentCardIndex];
+    const cat = getCurrentCategory();
+
+    document.getElementById('swipeContainer').style.display = '';
+    document.getElementById('budgetWrap').style.display = cat.hasBudget && state.currentCardIndex >= items.length ? 'block' : 'none';
+    const ctrls = document.querySelector('.swipe-controls');
+    if (ctrls) ctrls.style.display = 'flex';
+
+    if (!item) {
+      nextCategory();
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="swipe-card" id="activeCard" data-item-id="${item.id}">
+        <span class="swipe-stamp love">♥</span>
+        <span class="swipe-stamp skip">✕</span>
+        <div class="card-photo" style="background-image: url('${item.img}')"></div>
+        <div class="card-body">
+          <div class="card-tag">${item.tag}</div>
+          <div class="card-name">${item.name}</div>
+          <div class="card-desc">${item.desc}</div>
+        </div>
+      </div>
+    `;
+
+    setupSwipeListeners(container, item, loved => swipeCard(loved));
+  }
+
+  function setupSwipeListeners(container, item, onSwipe) {
+    const card = container.querySelector('.swipe-card');
+    if (!card) return;
+
+    let startX = 0, startY = 0, currentX = 0;
+
+    function handleStart(e) {
+      const ev = e.touches ? e.touches[0] : e;
+      startX = ev.clientX;
+      startY = ev.clientY;
+      currentX = startX;
+      card.classList.add('dragging');
+      card.querySelector('.swipe-stamp.love').classList.remove('visible');
+      card.querySelector('.swipe-stamp.skip').classList.remove('visible');
+    }
+
+    function handleMove(e) {
+      if (!card.classList.contains('dragging')) return;
+      e.preventDefault();
+      const ev = e.touches ? e.touches[0] : e;
+      currentX = ev.clientX;
+      const delta = currentX - startX;
+      card.style.transform = `translateX(${delta}px) rotate(${delta * 0.03}deg)`;
+      const loveStamp = card.querySelector('.swipe-stamp.love');
+      const skipStamp = card.querySelector('.swipe-stamp.skip');
+      if (delta > 30) loveStamp.classList.add('visible');
+      else if (delta < -30) skipStamp.classList.add('visible');
+      else { loveStamp.classList.remove('visible'); skipStamp.classList.remove('visible'); }
+    }
+
+    function handleEnd() {
+      if (!card.classList.contains('dragging')) return;
+      card.classList.remove('dragging');
+      const delta = currentX - startX;
+      if (delta > 80) {
+        card.style.transition = 'transform 0.3s';
+        card.style.transform = 'translateX(400px) rotate(15deg)';
+        setTimeout(() => { onSwipe(true); }, 200);
+      } else if (delta < -80) {
+        card.style.transition = 'transform 0.3s';
+        card.style.transform = 'translateX(-400px) rotate(-15deg)';
+        setTimeout(() => { onSwipe(false); }, 200);
+      } else {
+        card.style.transition = 'transform 0.2s';
+        card.style.transform = '';
+      }
+    }
+
+    card.addEventListener('touchstart', handleStart, { passive: true });
+    card.addEventListener('touchmove', handleMove, { passive: false });
+    card.addEventListener('touchend', handleEnd);
+    card.addEventListener('mousedown', handleStart);
+    document.addEventListener('mousemove', function mm(e) {
+      if (card.classList.contains('dragging')) handleMove(e);
+    });
+    document.addEventListener('mouseup', function mu() {
+      if (card.classList.contains('dragging')) handleEnd();
+      document.removeEventListener('mousemove', mm);
+      document.removeEventListener('mouseup', mu);
+    });
+  }
+
+  function nextCategory() {
+    const cat = getCurrentCategory();
+    if (cat.hasBudget) {
+      state.selections.budget = parseInt(document.getElementById('budgetSlider').value, 10);
+    }
+    state.currentCategoryIndex++;
+    state.currentCardIndex = 0;
+    document.getElementById('swipeNextCategory').style.display = 'none';
+    document.getElementById('swipeLove').disabled = false;
+    document.getElementById('swipeSkip').disabled = false;
+    document.getElementById('budgetWrap').style.display = 'none';
+    document.getElementById('swipeContainer').style.display = '';
+
+    if (state.currentCategoryIndex < CATEGORIES.length) {
+      document.getElementById('swipeTitle').textContent = CATEGORIES[state.currentCategoryIndex].label;
+      renderProgress();
+      renderLikedTags();
+      renderCard();
+    } else {
+      finishPreferences();
+    }
+  }
+
+  function finishPreferences() {
+    const destItems = getDestinationCandidates();
+    state.syncSelections = destItems;
+    state.syncCardIndex = 0;
+
+    if (state.role === 'coordinator') {
+      const trip = getTrip(state.tripCode) || {};
+      trip.coordinatorPreferences = { ...state.selections };
+      trip.tripName = state.tripName;
+      trip.password = state.coordPassword;
+      const existingByName = new Map((trip.members || []).map(m => [m.name.toLowerCase(), m]));
+      trip.members = state.members.map(m => {
+        const name = m.trim();
+        const ex = existingByName.get(name.toLowerCase());
+        return ex || { name, id: 'm' + Math.random().toString(36).slice(2), done: false };
+      });
+      saveTrip(state.tripCode, trip);
+    } else {
+      const trip = getTrip(state.tripCode);
+      if (!trip) {
+        toast('Trip not found. Check the code.');
         return;
       }
+      const mid = 'm' + Math.random().toString(36).slice(2);
+      state.memberId = mid;
+      trip.memberPreferences = trip.memberPreferences || {};
+      trip.memberPreferences[mid] = { name: state.memberName, selections: { ...state.selections } };
+      const mem = trip.members.find(m => m.name.toLowerCase() === state.memberName.trim().toLowerCase());
+      if (mem) mem.done = true;
+      else trip.members.push({ name: state.memberName, id: mid, done: true });
+      saveTrip(state.tripCode, trip);
+    }
 
-      container.innerHTML = `
-        <div class="swipe-card">
-          <div class="card-photo" style="background-image: url('${item.img}')"></div>
-          <div class="card-body">
-            <div class="card-tag">${item.tag}</div>
-            <div class="card-name">${item.name}</div>
-            <div class="card-desc">${item.desc}</div>
-          </div>
+    showSwipeSync();
+  }
+
+  function getDestinationCandidates() {
+    const climateIds = (state.selections.climate || []).map(c => c.id);
+    const destLiked = (state.selections.destination || []).map(d => d.id);
+    const items = [];
+    (climateIds.length ? climateIds : ['tropical', 'coastal']).forEach(id => {
+      (DATA.destinations[id] || []).forEach(d => {
+        if (destLiked.length === 0 || destLiked.includes(d.id)) items.push(d);
+      });
+    });
+    const uniq = [...new Map(items.map(i => [i.id, i])).values()];
+    return uniq.length ? uniq : DATA.destinations.tropical;
+  }
+
+  function showSwipeSync() {
+    document.getElementById('syncRoleBadge').textContent = state.role;
+    document.getElementById('syncRoleBadge').className = `role-badge ${state.role}`;
+    const trip = getTrip(state.tripCode) || {};
+    const members = trip.members || state.members.map(m => ({ name: m.trim() }));
+    document.getElementById('avatarStack').innerHTML = members.slice(0, 5).map(m =>
+      `<span title="${m.name}">${(m.name || '?')[0].toUpperCase()}</span>`
+    ).join('');
+    document.getElementById('momentumText').textContent = members.length + ' member(s) syncing';
+    renderSyncCard();
+    updateConfidence();
+    showScreen('swipe-sync');
+  }
+
+  function renderSyncCard() {
+    const container = document.getElementById('syncContainer');
+    const items = state.syncSelections;
+    const item = items[state.syncCardIndex];
+
+    if (!item || items.length === 0) {
+      document.getElementById('syncSubmitBtn').style.display = 'block';
+      container.innerHTML = '<p style="text-align:center;padding:40px;">All destination cards reviewed. Submit to see results.</p>';
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="swipe-card" id="syncActiveCard">
+        <span class="swipe-stamp love">♥</span>
+        <span class="swipe-stamp skip">✕</span>
+        <div class="card-photo" style="background-image: url('${item.img}')"></div>
+        <div class="card-body">
+          <div class="card-tag">${item.tag}</div>
+          <div class="card-name">${item.name}</div>
+          <div class="card-desc">${item.desc}</div>
         </div>
-      `;
-    }
+      </div>
+    `;
 
-    function nextCategory() {
-      state.currentCategoryIndex++;
-      state.currentCardIndex = 0;
-      if (state.currentCategoryIndex < CATEGORIES.length) {
-        renderCard();
-      } else {
-        finishSwiping();
+    const card = container.querySelector('.swipe-card');
+    let startX = 0, currentX = 0;
+
+    let currentX = 0, startX = 0;
+    card.addEventListener('touchstart', e => { startX = currentX = (e.touches[0].clientX); card.classList.add('dragging'); }, { passive: true });
+    card.addEventListener('touchmove', e => {
+      e.preventDefault();
+      currentX = e.touches[0].clientX;
+      const d = currentX - startX;
+      card.style.transform = `translateX(${d}px) rotate(${d*0.03}deg)`;
+      card.querySelector('.swipe-stamp.love').classList.toggle('visible', d > 30);
+      card.querySelector('.swipe-stamp.skip').classList.toggle('visible', d < -30);
+    }, { passive: false });
+    card.addEventListener('touchend', () => { if (card.classList.contains('dragging')) handleSyncEnd(card, startX, currentX); });
+
+    function onMouseMove(e) { if (card.classList.contains('dragging')) currentX = e.clientX; }
+    function onMouseUp() {
+      if (card.classList.contains('dragging')) handleSyncEnd(card, startX, currentX);
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    }
+    card.addEventListener('mousedown', e => { startX = currentX = e.clientX; card.classList.add('dragging'); document.addEventListener('mousemove', onMouseMove); document.addEventListener('mouseup', onMouseUp); });
+
+    document.getElementById('syncLove').onclick = () => { syncSwipe(true); };
+    document.getElementById('syncSkip').onclick = () => { syncSwipe(false); };
+  }
+
+  function handleSyncEnd(card, startX, currentX) {
+    if (!card || !card.classList.contains('dragging')) return;
+    card.classList.remove('dragging');
+    card.style.transition = 'transform 0.3s';
+    const d = currentX - startX;
+    if (d > 80) { card.style.transform = 'translateX(400px) rotate(15deg)'; setTimeout(() => syncSwipe(true), 250); }
+    else if (d < -80) { card.style.transform = 'translateX(-400px) rotate(-15deg)'; setTimeout(() => syncSwipe(false), 250); }
+    else { card.style.transition = 'transform 0.2s'; card.style.transform = ''; }
+  }
+
+  function syncSwipe(loved) {
+    const items = state.syncSelections;
+    const item = items[state.syncCardIndex];
+    if (!item) return;
+    if (loved) {
+      state.syncSelections = state.syncSelections.filter(s => s.id !== item.id);
+      state.syncSelections.unshift(item);
+    }
+    state.syncCardIndex++;
+    updateConfidence();
+    if (state.syncCardIndex >= items.length) {
+      document.getElementById('syncSubmitBtn').style.display = 'block';
+      document.getElementById('syncContainer').innerHTML = '<p style="text-align:center;padding:40px;">All cards reviewed. Submit to see results.</p>';
+    } else {
+      renderSyncCard();
+    }
+  }
+
+  function updateConfidence() {
+    const total = state.syncSelections.length;
+    const done = state.syncCardIndex;
+    const pct = total ? Math.min(96, Math.round(38 + (done / total) * 58)) : 38;
+    document.getElementById('confidenceValue').textContent = pct + '%';
+    document.getElementById('confidenceStatus').textContent =
+      pct < 50 ? 'Swiping to build consensus…' : pct < 80 ? 'Getting there…' : 'Group aligned!';
+  }
+
+  // Entry
+  setTimeout(() => {
+    document.getElementById('splashProgress').style.width = '100%';
+    setTimeout(() => showScreen('entry'), 500);
+  }, 1500);
+
+  document.querySelectorAll('.role-card').forEach(card => {
+    card.addEventListener('click', () => {
+      state.role = card.dataset.role;
+      if (state.role === 'coordinator') showScreen('coord-create');
+      else showScreen('member-join');
+    });
+  });
+
+  document.getElementById('coordCreateBtn').addEventListener('click', () => {
+    const tripName = document.getElementById('tripName').value.trim();
+    const memberNames = document.getElementById('memberNames').value.trim();
+    const password = document.getElementById('coordPassword').value;
+    if (!tripName) { toast('Enter trip name'); return; }
+    if (!memberNames) { toast('Enter member names'); return; }
+    if (!password) { toast('Set a password'); return; }
+    state.tripName = tripName;
+    state.coordPassword = password;
+    state.members = memberNames.split(',').map(m => m.trim()).filter(Boolean);
+    state.tripCode = String(Math.floor(100000 + Math.random() * 900000));
+    state.currentCategoryIndex = 0;
+    state.currentCardIndex = 0;
+    state.selections = {};
+    saveTrip(state.tripCode, {
+      tripName,
+      password,
+      members: state.members.map(m => ({ name: m, id: 'm' + Math.random().toString(36).slice(2), done: false }))
+    });
+    document.getElementById('swipeTitle').textContent = CATEGORIES[0].label;
+    document.getElementById('swipeRoleBadge').textContent = 'Coordinator';
+    document.getElementById('swipeRoleBadge').className = 'role-badge coordinator';
+    renderProgress();
+    renderLikedTags();
+    renderCard();
+    showScreen('swipe-preferences');
+  });
+
+  document.getElementById('memberJoinBtn').addEventListener('click', () => {
+    const code = document.getElementById('tripCodeJoin').value.trim();
+    const name = document.getElementById('memberName').value.trim();
+    if (code.length !== 6) { toast('Enter 6-digit code'); return; }
+    if (!name) { toast('Enter your name'); return; }
+    const trip = getTrip(code);
+    if (!trip || !trip.tripName) {
+      toast('Trip not found. Check the code.');
+      return;
+    }
+    state.tripCode = code;
+    state.memberName = name;
+    state.tripName = trip.tripName;
+    state.members = (trip.members || []).map(m => m.name);
+    state.currentCategoryIndex = 0;
+    state.currentCardIndex = 0;
+    state.selections = {};
+    document.getElementById('swipeTitle').textContent = CATEGORIES[0].label;
+    document.getElementById('swipeRoleBadge').textContent = 'Member';
+    document.getElementById('swipeRoleBadge').className = 'role-badge member';
+    renderProgress();
+    renderLikedTags();
+    renderCard();
+    showScreen('swipe-preferences');
+  });
+
+  document.getElementById('budgetSlider').addEventListener('input', function() {
+    document.getElementById('budgetLabel').textContent = BUDGET_LABELS[this.value - 1] || 'Medium';
+  });
+
+  document.getElementById('swipeNextCategory').addEventListener('click', nextCategory);
+
+  document.getElementById('swipeLove').addEventListener('click', () => swipeCard(true));
+  document.getElementById('swipeSkip').addEventListener('click', () => swipeCard(false));
+
+  document.getElementById('syncSubmitBtn').addEventListener('click', () => {
+    const winning = state.syncSelections[0];
+    if (state.role === 'coordinator') {
+      const trip = getTrip(state.tripCode) || {};
+      trip.winningDestination = winning;
+      saveTrip(state.tripCode, trip);
+      document.getElementById('shareTripCode').textContent = state.tripCode;
+      const qrEl = document.getElementById('shareQr');
+      qrEl.innerHTML = '';
+      if (typeof QRCode !== 'undefined') {
+        new QRCode(qrEl, { text: window.location.href.split('?')[0] + '?join=' + state.tripCode, width: 128, height: 128 });
       }
+      renderMemberStatus();
+      showScreen('share');
+    } else {
+      renderMemberResult();
+      showScreen('member-result');
     }
+  });
 
-    function finishSwiping() {
-      if (state.role === 'coordinator') {
-        document.getElementById('shareTripCode').textContent = state.tripCode;
-        // Generate QR Code
-        new QRCode(document.getElementById("shareQr"), {
-          text: "https://tripmaker.ai/" + state.tripCode,
-          width: 128,
-          height: 128
+  function renderMemberStatus() {
+    const trip = getTrip(state.tripCode) || {};
+    const members = trip.members || state.members.map(m => ({ name: m, done: false }));
+    document.getElementById('memberStatusList').innerHTML = members.map(m =>
+      `<div class="member-status-item"><span>${m.name}</span><span class="badge ${m.done ? 'done' : 'pending'}">${m.done ? 'Done' : 'Pending'}</span></div>`
+    ).join('');
+  }
+
+  document.getElementById('viewReportBtn').addEventListener('click', () => showScreen('password-gate'));
+
+  document.getElementById('unlockReportBtn').addEventListener('click', () => {
+    const pwd = document.getElementById('reportPassword').value;
+    const trip = getTrip(state.tripCode) || {};
+    if (pwd !== trip.password) {
+      document.getElementById('passwordError').style.display = 'block';
+      return;
+    }
+    document.getElementById('passwordError').style.display = 'none';
+    renderCoordResult();
+    showScreen('coord-result');
+  });
+
+  function renderCoordResult() {
+    const trip = getTrip(state.tripCode) || {};
+    const win = trip.winningDestination || state.syncSelections?.[0] || { name: 'TBD', img: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600', desc: '' };
+    document.getElementById('coordHeroCard').innerHTML = `
+      <div class="hero-photo" style="background-image:url('${win.img}')"></div>
+      <div class="hero-body"><h3>${win.name}</h3><p>${win.desc || 'Winning destination'}</p></div>
+    `;
+
+    const allPrefs = [trip.coordinatorPreferences || {}];
+    (trip.memberPreferences || {});
+    Object.values(trip.memberPreferences || {}).forEach(m => allPrefs.push(m.selections || {}));
+
+    const voteData = {};
+    ['climate', 'food', 'activities', 'accommodation', 'hotelPrefs', 'accessibility'].forEach(catId => {
+      const counts = {};
+      allPrefs.forEach(p => {
+        (p[catId] || []).forEach(item => {
+          counts[item.name] = (counts[item.name] || 0) + 1;
         });
-        showScreen('share');
-      } else {
-        showScreen('member-result');
-      }
+      });
+      voteData[catId] = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    });
+
+    const catLabels = { climate: 'Climate', food: 'Food', activities: 'Activities', accommodation: 'Stay', hotelPrefs: 'Amenities', accessibility: 'Accessibility' };
+    document.getElementById('coordVoteBars').innerHTML = Object.entries(voteData).map(([k, arr]) => {
+      const total = allPrefs.length;
+      return arr.map(([name, count]) => `
+        <div class="vote-bar-item">
+          <label>${name}</label>
+          <div class="vote-bar-track"><div class="vote-bar-fill" style="width:${(count/total)*100}%"></div></div>
+        </div>
+      `).join('');
+    }).join('') || '<p>No preference data yet.</p>';
+
+    const conflicts = [];
+    const foods = [...new Set(allPrefs.flatMap(p => (p.food || []).map(f => f.name)))];
+    const activities = [...new Set(allPrefs.flatMap(p => (p.activities || []).map(a => a.name)))];
+    if (foods.length > 3) conflicts.push({ title: 'Food preferences vary widely', resolution: 'Suggest a mix: pick 2 restaurants—one casual, one upscale—so everyone finds something.' });
+    if (activities.length > 4) conflicts.push({ title: 'Different activity energy levels', resolution: 'Split days: mornings for active folks, afternoons for relaxation. Optional activities for those who prefer downtime.' });
+    const stays = allPrefs.map(p => (p.accommodation || [])[0]?.name).filter(Boolean);
+    if ([...new Set(stays)].length > 1) conflicts.push({ title: 'Accommodation style mismatch', resolution: 'Compromise: Boutique hotel with villa-like common areas, or rent a villa with private rooms.' });
+
+    document.getElementById('coordConflictList').innerHTML = conflicts.length ? conflicts.map(c =>
+      `<div class="conflict-item"><h4>${c.title}</h4><p>${c.resolution}</p></div>`
+    ).join('') : '<p>No major conflicts detected. Group preferences align well!</p>';
+
+    const plan = `
+      <h4>AI Compromise Recommendation</h4>
+      <ul>
+        <li><strong>Destination:</strong> ${win.name} — balances climate preferences and group appeal.</li>
+        <li><strong>Food:</strong> Mix of ${(voteData.food || []).slice(0,2).map(([n]) => n).join(' and ') || 'local cuisine'} to satisfy varied tastes.</li>
+        <li><strong>Stay:</strong> ${(voteData.accommodation || [])[0]?.[0] || 'Boutique hotel'} — good middle ground for group comfort.</li>
+        <li><strong>Activities:</strong> Schedule 2–3 group activities, keep rest optional so everyone can choose their pace.</li>
+        <li><strong>Accessibility:</strong> Check accommodation & transport for any special needs; plan rest stops for longer days.</li>
+      </ul>
+    `;
+    document.getElementById('coordAiPlan').innerHTML = plan;
+  }
+
+  function renderMemberResult() {
+    const catLabels = { climate: 'Climate', destination: 'Destination', food: 'Food', activities: 'Activities', accommodation: 'Stay', hotelPrefs: 'Amenities', accessibility: 'Accessibility', budget: 'Budget' };
+    const html = Object.entries(state.selections).filter(([k, v]) => v && (Array.isArray(v) ? v.length : true)).map(([key, val]) => {
+      const label = catLabels[key] || key;
+      const tags = Array.isArray(val) ? val.map(i => i.name) : [BUDGET_LABELS[val - 1] || val];
+      return `<div class="private-card"><h4>${label}</h4><div class="tags">${tags.map(t => `<span>${t}</span>`).join('')}</div></div>`;
+    }).join('');
+    document.getElementById('memberPrivateGrid').innerHTML = html || '<p>No picks saved.</p>';
+  }
+
+  document.getElementById('copyLinkBtn').addEventListener('click', () => {
+    const url = window.location.href.split('?')[0] + '?join=' + state.tripCode;
+    navigator.clipboard?.writeText(url).then(() => toast('Link copied!')).catch(() => toast('Could not copy'));
+  });
+  document.getElementById('whatsappBtn').addEventListener('click', () => {
+    const url = encodeURIComponent(window.location.href.split('?')[0] + '?join=' + state.tripCode);
+    window.open('https://wa.me/?text=Join our trip! ' + url, '_blank');
+  });
+  document.getElementById('saveQrBtn').addEventListener('click', () => {
+    const canvas = document.querySelector('#shareQr canvas');
+    if (canvas) {
+      const a = document.createElement('a');
+      a.download = 'tripmaker-qr.png';
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+      toast('QR saved!');
     }
+  });
+  document.getElementById('emailBtn').addEventListener('click', () => {
+    const url = window.location.href.split('?')[0] + '?join=' + state.tripCode;
+    window.location.href = 'mailto:?subject=Join our trip - ' + (state.tripName || 'TripMaker') + '&body=Join with code ' + state.tripCode + ' or open: ' + url;
+  });
 
-    // --- BUTTON CONTROLS ---
-    document.getElementById('swipeLove').addEventListener('click', () => {
-      state.currentCardIndex++;
-      renderCard();
-    });
-
-    document.getElementById('swipeSkip').addEventListener('click', () => {
-      state.currentCardIndex++;
-      renderCard();
-    });
-
+  if (/\?join=(\d{6})/.test(location.search)) {
+    const code = location.search.match(/\?join=(\d{6})/)[1];
+    document.getElementById('tripCodeJoin').value = code;
+    document.querySelector('.role-card[data-role="member"]').click();
+  }
+})();
   </script>
 </body>
 </html>
