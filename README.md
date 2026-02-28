@@ -29,7 +29,7 @@ TripMaker AI is a premium, mobile-first group travel decision engine designed to
 
 ## 📸 Screenshots
 
-| Splash Screen | Swiping Interface | Final Results |
+| Splash Screen | Final Results |  Swiping Interface |
 | :---: | :---: | :---: |
 | ![Splash](Screenshot%202026-02-28%20074715.png) | ![Swiping](Screenshot%202026-02-28%20074946.png) | ![Results](Screenshot%202026-02-28%20075042.png) |
 
@@ -84,7 +84,7 @@ The application is built on a single-file architecture for maximum portability.
 
 ## 📖 API Documentation (Internal Data Structure)
 
-TripMaker AI uses a lightweight local storage schema. No external backend is required for the demo.
+WANDER' AI uses a lightweight local storage schema. No external backend is required for the demo.
 
 ### Storage Keys
 - `tripmaker_trips`: An object where keys are 6-digit `tripCodes`.
