@@ -6,7 +6,6 @@
 DON'T HAVE A TEAM SO EITHER I REPRESENT AS FIZA ORELSE "SOLOTECHY".
 
 ---
----
 
 ## 👥 Team Members
 
