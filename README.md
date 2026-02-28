@@ -3,8 +3,7 @@
 ---
 
 ## 👥 Team Name:
-DON'T HAVE A TEAM SO EITHER I REPRESENT AS FIZA ORELSE "SOLOTECHY".
-
+Don't have a team so either i represent as 'FIZA' orelse 'SOLOTECHY'
 ---
 
 ## 👥 Team Members
