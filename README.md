@@ -1,8 +1,23 @@
 # WANDER AI ✈️
 
+---
+
+## 👥 Team Name:
+DON'T HAVE A TEAM SO EITHER I REPRESENT AS FIZA ORELSE "SOLOTECHY".
+
+---
+
+---
+
+## 👥 Team Members
+
+- **Project Lead & Developer**: Fiza fathima pp -[SCHOOL OF ENGINEERING, CUSAT]
+
+---
+
 **Resolve the argument phase. Swipe. Sync. Travel.**
 
-TripMaker AI is a premium, mobile-first group travel decision engine designed to eliminate the friction of planning trips with friends. By moving away from endless group chats and indecision, TripMaker AI uses an intuitive, swipe-based preference selection system to anonymously gather group choices and generate an "AI-driven" conflict report with actionable compromises.
+WANDER' AI is a premium, mobile-first group travel decision engine designed to eliminate the friction of planning trips with friends.Whenever a trip is planned at the end it becomes a responsibility of an individual . By moving away from endless group chats and indecision along with different resources at different platforms , WANDER' AI uses an intuitive, swipe-based preference selection system to anonymously gather group choices and generate an "AI-driven" conflict report with actionable compromises.it includes accessibility features , preferances of the entire trip and finalizes it into a single destination according to everyones budget and comfort.
 
 ---
 
@@ -112,12 +127,6 @@ WANDER' AI uses a lightweight local storage schema. No external backend is requi
 ## 🎥 Demo Video
 
 [Watch the Demonstration Video Here](https://example.com/demo-video-placeholder) *(Link to be updated after recording)*
-
----
-
-## 👥 Team Members
-
-- **Project Lead & Developer**: Fizafathimapp
 
 ---
 
