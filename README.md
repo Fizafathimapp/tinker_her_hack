@@ -1,4 +1,4 @@
-# TripMaker AI ✈️
+# WANDER AI ✈️
 
 **Resolve the argument phase. Swipe. Sync. Travel.**
 
