@@ -1081,6 +1081,34 @@
         { id: 'hotelPrefs', label: 'Amenities', key: 'hotelPrefs', max: -1 },
         { id: 'accessibility', label: 'Accessibility', key: 'accessibility', max: -1, hasBudget: true }
       ];
+      // Add this to your existing script to handle screen navigation
+      function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+      }
+
+      // Logic for the Swipe-to-Sync confidence meter
+      function updateConfidence(val) {
+        const meter = document.getElementById('confidenceValue');
+        const status = document.getElementById('confidenceStatus');
+        meter.innerText = val + "%";
+
+        if (val > 80) {
+          status.innerText = "Consensus reached! ✈️";
+          document.getElementById('syncSubmitBtn').style.display = 'block';
+        } else if (val > 50) {
+          status.innerText = "Finding common ground...";
+        }
+      }
+
+      // Event Listeners for Role Selection
+      document.querySelectorAll('.role-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const role = card.dataset.role;
+          if (role === 'coordinator') showScreen('coord-create');
+          else showScreen('member-join');
+        });
+      });
 
       const BUDGET_LABELS = ['Budget', 'Economy', 'Medium', 'Comfort', 'Premium'];
       const STORAGE_KEY = 'tripmaker_trips';
