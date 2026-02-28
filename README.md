@@ -124,7 +124,7 @@ WANDER' AI uses a lightweight local storage schema. No external backend is requi
 
 ## 🎥 Demo Video
 
-[Watch the Demonstration Video Here](https://example.com/demo-video-placeholder) *(Link to be updated after recording)*
+[Watch the Demonstration Video Here](https://drive.google.com/file/d/1b5lFf-gScqvzLIlwnir-2FWI1wNTKnlg/view?usp=sharing) *
 
 ---
 
